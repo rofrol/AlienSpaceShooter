@@ -8,7 +8,7 @@ const structs = @import("structs.zig");
 const draw = @import("draw.zig");
 const defs = @import("defs.zig");
 const init = @import("init.zig");
-var app = &@import("main.zig").app;
+const main = @import("main.zig");
 
 pub fn handleInput() void {
     var sdl_event: c.SDL_Event = undefined;
@@ -26,41 +26,13 @@ pub fn handleInput() void {
 }
 
 fn keyDown(event: *c.SDL_KeyboardEvent) void {
-    if (event.repeat == 0) {
-        if (event.keysym.scancode == c.SDL_SCANCODE_RIGHT) {
-            app.*.right = true;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_LEFT) {
-            app.*.left = true;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_UP) {
-            app.*.up = true;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_DOWN) {
-            app.*.down = true;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_SPACE) {
-            app.*.fire = true;
-        }
+    if (event.repeat == 0 and event.keysym.scancode < defs.MAX_KEYBOARD_KEYS) {
+        main.app.keyboard[event.keysym.scancode] = true;
     }
 }
 
 fn keyUp(event: *c.SDL_KeyboardEvent) void {
-    if (event.repeat == 0) {
-        if (event.keysym.scancode == c.SDL_SCANCODE_RIGHT) {
-            app.*.right = false;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_LEFT) {
-            app.*.left = false;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_UP) {
-            app.*.up = false;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_DOWN) {
-            app.*.down = false;
-        }
-        if (event.keysym.scancode == c.SDL_SCANCODE_SPACE) {
-            app.*.fire = false;
-        }
+    if (event.repeat == 0 and event.keysym.scancode < defs.MAX_KEYBOARD_KEYS) {
+        main.app.keyboard[event.keysym.scancode] = false;
     }
 }
