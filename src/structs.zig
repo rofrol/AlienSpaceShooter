@@ -21,18 +21,46 @@ const Delegate = struct {
 pub const Entity = struct {
     x: f32 = 0,
     y: f32 = 0,
-    w: i32 = 0,
-    h: i32 = 0,
+    w: i32 = undefined,
+    h: i32 = undefined,
     dx: f32 = 0,
     dy: f32 = 0,
     health: i32 = 0,
     reload: i32 = 0,
     texture: *c.SDL_Texture = undefined,
-    next: *Entity = undefined,
+    side: u1 = 0,
 };
 
 pub const Stage = struct {
-    fighterHead: Entity = undefined,
-    fighterTail: *Entity = undefined,
+    fighters: std.DoublyLinkedList(*Entity) = undefined,
     bullets: std.DoublyLinkedList(*Entity) = undefined,
+    explosions: std.DoublyLinkedList(*Explosion) = undefined,
+    debris: std.DoublyLinkedList(*Debris) = undefined,
+};
+
+pub const Explosion = struct {
+    x: f32,
+    y: f32,
+    dx: f32,
+    dy: f32,
+    r: u8 = 0,
+    g: u8 = 0,
+    b: u8 = 0,
+    a: u8,
+};
+
+pub const Debris = struct {
+    x: f32,
+    y: f32,
+    dx: f32,
+    dy: f32,
+    rect: c.SDL_Rect,
+    texture: *c.SDL_Texture,
+    life: u32,
+};
+
+pub const Star = struct {
+    x: i32,
+    y: i32,
+    speed: u8,
 };

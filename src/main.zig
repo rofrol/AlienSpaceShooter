@@ -20,6 +20,9 @@ pub fn main() !void {
 
     try stager.initStage();
 
+    // var then = c.SDL_GetTicks();
+    // var remainder: f32 = 0;
+
     while (true) {
         draw.prepareScene();
         input.handleInput();
@@ -28,6 +31,23 @@ pub fn main() !void {
         app.delegate.draw();
 
         draw.presentScene();
+        // capFrameRate(&then, &remainder);
         c.SDL_Delay(16);
     }
+}
+
+fn capFrameRate(then: *u32, remainder: *f32) void {
+    var wait: u32 = @as(u32, 16.0 + remainder.*);
+    remainder.* -= @mod(1.0, remainder.*);
+    const frameTime: u32 = c.SDL_GetTicks() - then.*;
+    wait -= frameTime;
+
+    if (wait < 1) {
+        wait = 1;
+    }
+
+    c.SDL_Delay(wait);
+    remainder.* += 0.667;
+
+    then.* = c.SDL_GetTicks();
 }

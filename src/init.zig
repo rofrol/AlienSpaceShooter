@@ -4,6 +4,7 @@ const c = @cImport({
 });
 const defs = @import("defs.zig");
 const main = @import("main.zig");
+const stage = @import("stage.zig");
 
 pub fn initSDL() void {
     _ = c.SDL_Init(c.SDL_INIT_VIDEO);
@@ -20,6 +21,42 @@ pub fn initSDL() void {
 }
 
 pub fn exitSDL() void {
+    var f = main.stage.fighters.first;
+
+    while (f) |node| {
+        stage.allocator.destroy(node.data);
+        f = node.next;
+        main.stage.fighters.remove(node);
+        stage.allocator.destroy(node);
+    }
+
+    var b = main.stage.bullets.first;
+
+    while (b) |node| {
+        stage.allocator.destroy(node.data);
+        b = node.next;
+        main.stage.bullets.remove(node);
+        stage.allocator.destroy(node);
+    }
+
+    var e = main.stage.explosions.first;
+
+    while (e) |node| {
+        stage.allocator.destroy(node.data);
+        e = node.next;
+        main.stage.explosions.remove(node);
+        stage.allocator.destroy(node);
+    }
+
+    var d = main.stage.debris.first;
+
+    while (d) |node| {
+        stage.allocator.destroy(node.data);
+        d = node.next;
+        main.stage.debris.remove(node);
+        stage.allocator.destroy(node);
+    }
+
     c.SDL_Quit();
     c.SDL_DestroyWindow(main.app.window);
     c.SDL_DestroyRenderer(main.app.renderer);
