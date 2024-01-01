@@ -1,7 +1,15 @@
 const c = @cImport({
     @cInclude("SDL2/SDL.h");
     @cInclude("SDL2/SDL_image.h");
+    // @cInclude("SDL2/SDL_mixer.h");
 });
+
+const mixer = @cImport({
+    // @cInclude("SDL2/SDL.h");
+    // @cInclude("SDL2/SDL_image.h");
+    @cInclude("SDL2/SDL_mixer.h");
+});
+
 const defs = @import("defs.zig");
 const main = @import("main.zig");
 const stage = @import("stage.zig");
@@ -17,6 +25,8 @@ pub fn initSDL() void {
         0,
     ).?;
     main.app.renderer = c.SDL_CreateRenderer(main.app.window, 0, c.SDL_RENDERER_PRESENTVSYNC).?;
+    _ = mixer.Mix_OpenAudio(44100, mixer.MIX_DEFAULT_FORMAT, 2, 1024);
+    _ = mixer.Mix_AllocateChannels(defs.MAX_SND_CHANNELS);
     _ = c.IMG_Init(c.IMG_INIT_PNG);
 }
 
@@ -57,7 +67,9 @@ pub fn exitSDL() void {
         stage.allocator.destroy(node);
     }
 
-    c.SDL_Quit();
     c.SDL_DestroyWindow(main.app.window);
     c.SDL_DestroyRenderer(main.app.renderer);
+    mixer.Mix_Quit();
+    c.IMG_Quit();
+    c.SDL_Quit();
 }

@@ -10,6 +10,7 @@ const defs = @import("defs.zig");
 const init = @import("init.zig");
 const input = @import("input.zig");
 const stager = @import("stage.zig");
+const sounds = @import("sounds.zig");
 
 pub var app = structs.App{};
 pub var stage = structs.Stage{};
@@ -19,6 +20,8 @@ pub fn main() !void {
     defer init.exitSDL();
 
     try stager.initStage();
+
+    try sounds.initSounds();
 
     // var then = c.SDL_GetTicks();
     // var remainder: f32 = 0;

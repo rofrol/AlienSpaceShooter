@@ -11,6 +11,7 @@ const drawer = @import("draw.zig");
 const structs = @import("structs.zig");
 const defs = @import("defs.zig");
 const utils = @import("utils.zig");
+const sounds = @import("sounds.zig");
 
 var player: *structs.Entity = undefined;
 
@@ -56,6 +57,10 @@ pub fn initStage() !void {
     alienBulletTexture = try drawer.loadTexture("assets/alienBullet.png");
     explosionsTexture = try drawer.loadTexture("assets/explosion.png");
     backgroundTexture = try drawer.loadTexture("assets/background.png");
+
+    sounds.loadMusic("music/alienSpaceShooter.ogg");
+
+    sounds.playMusic(true);
 
     try resetStage();
 }
@@ -209,6 +214,7 @@ fn handlePlayer() !void {
         }
 
         if (main.app.keyboard[c.SDL_SCANCODE_F] and player.reload == 0) {
+            sounds.playSound(defs.Sound.playerFire, defs.Channel.player);
             try fireBullet();
         }
 
@@ -248,6 +254,7 @@ fn handleAliens() !void {
         if (fighter != player) {
             fighter.reload -= 1;
             if (fighter.reload == 0 and player.health > 0) {
+                sounds.playSound(defs.Sound.alienFire, defs.Channel.alien);
                 try fireAlienBullet(fighter);
             }
         }
@@ -358,6 +365,12 @@ fn bulletHitFighter(bullet: *structs.Entity) !bool {
         )) {
             bullet.health = 0;
             fighter.health = 0;
+
+            if (fighter == player) {
+                sounds.playSound(defs.Sound.PlayerDies, defs.Channel.player);
+            } else {
+                sounds.playSound(defs.Sound.alienDies, defs.Channel.any);
+            }
 
             try addExplosions(
                 @as(i32, @intFromFloat(bullet.x)),

@@ -12,3 +12,19 @@ pub const ALIEN_BULLET_SPEED = 8;
 pub const MAX_KEYBOARD_KEYS = 350;
 
 pub const MAX_STARS = 500;
+
+pub const MAX_SND_CHANNELS = 8;
+
+pub const Channel = enum(i8) {
+    any = -1,
+    player,
+    alien,
+};
+
+pub const Sound = enum(usize) {
+    playerFire,
+    alienFire,
+    PlayerDies,
+    alienDies,
+    max,
+};
