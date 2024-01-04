@@ -14,15 +14,20 @@ pub fn presentScene() void {
     c.SDL_RenderPresent(main.app.renderer);
 }
 
-pub fn loadTexture(filename: [*]const u8) !*c.SDL_Texture {
+pub fn loadTexture(filename: []const u8) !*c.SDL_Texture {
     var texture: *c.SDL_Texture = undefined;
-    c.SDL_LogMessage(
-        c.SDL_LOG_CATEGORY_APPLICATION,
-        c.SDL_LOG_PRIORITY_INFO,
-        "Loading %s",
-        filename,
-    );
-    texture = c.IMG_LoadTexture(main.app.renderer, filename).?;
+    const v = try main.app.textures.getOrPut(filename);
+    if (!v.found_existing) {
+        v.value_ptr.* = c.IMG_LoadTexture(main.app.renderer, filename.ptr).?;
+        c.SDL_LogMessage(
+            c.SDL_LOG_CATEGORY_APPLICATION,
+            c.SDL_LOG_PRIORITY_INFO,
+            "Loading %s",
+            filename.ptr,
+        );
+    }
+    texture = v.value_ptr.*;
+
     return texture;
 }
 

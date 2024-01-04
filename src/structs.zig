@@ -11,11 +11,12 @@ pub const App = struct {
     window: *c.SDL_Window = undefined,
     delegate: Delegate = Delegate{},
     keyboard: [defs.MAX_KEYBOARD_KEYS]bool = [_]bool{false} ** defs.MAX_KEYBOARD_KEYS,
+    textures: std.StringHashMap(*c.SDL_Texture) = undefined,
 };
 
 const Delegate = struct {
     logic: *const fn () anyerror!void = stage.logic,
-    draw: *const fn () void = stage.draw,
+    draw: *const fn () anyerror!void = stage.draw,
 };
 
 pub const Entity = struct {
@@ -36,6 +37,7 @@ pub const Stage = struct {
     bullets: std.DoublyLinkedList(*Entity) = undefined,
     explosions: std.DoublyLinkedList(*Explosion) = undefined,
     debris: std.DoublyLinkedList(*Debris) = undefined,
+    score: i16 = 0,
 };
 
 pub const Explosion = struct {
@@ -63,4 +65,13 @@ pub const Star = struct {
     x: i32,
     y: i32,
     speed: u8,
+};
+
+pub const Highscore = struct {
+    recent: bool = false,
+    score: i32,
+};
+
+pub const Highscores = struct {
+    highscore: [defs.NUM_HIGHSCORES]Highscore = undefined,
 };

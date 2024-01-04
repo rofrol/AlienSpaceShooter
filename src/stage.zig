@@ -12,6 +12,8 @@ const structs = @import("structs.zig");
 const defs = @import("defs.zig");
 const utils = @import("utils.zig");
 const sounds = @import("sounds.zig");
+const text = @import("text.zig");
+const highscores = @import("highscores.zig");
 
 var player: *structs.Entity = undefined;
 
@@ -34,6 +36,8 @@ var stageResetTimer: i32 = 0;
 
 var backgroundX: i32 = 0;
 
+var highscore: i32 = 0;
+
 var prng: std.rand.Xoshiro256 = undefined;
 const rand = prng.random();
 
@@ -43,6 +47,10 @@ pub fn initStage() !void {
         try std.os.getrandom(std.mem.asBytes(&seed));
         break :blk seed;
     });
+
+    main.app.delegate.logic = logic;
+    main.app.delegate.draw = draw;
+
     const stage_p = try allocator.create(structs.Stage);
     main.stage = stage_p.*;
 
@@ -56,13 +64,16 @@ pub fn initStage() !void {
     playerTexture = try drawer.loadTexture("assets/craft.png");
     alienBulletTexture = try drawer.loadTexture("assets/alienBullet.png");
     explosionsTexture = try drawer.loadTexture("assets/explosion.png");
-    backgroundTexture = try drawer.loadTexture("assets/background.png");
-
-    sounds.loadMusic("music/alienSpaceShooter.ogg");
-
-    sounds.playMusic(true);
 
     try resetStage();
+
+    try initPlayer();
+}
+
+pub fn initBackground() !void {
+    backgroundTexture = try drawer.loadTexture("assets/background5.png");
+
+    backgroundX = 0;
 }
 
 fn resetStage() !void {
@@ -102,10 +113,9 @@ fn resetStage() !void {
         allocator.destroy(node);
     }
 
-    try initPlayer();
-    try initStarfield();
-
     alienSpawnTimer = 0;
+
+    main.stage.score = 0;
 
     stageResetTimer = defs.FPS * 3;
 }
@@ -131,7 +141,7 @@ fn initPlayer() !void {
     );
 }
 
-fn initStarfield() !void {
+pub fn initStarfield() !void {
     // stars = [_]structs.Star{makeStar()} ** defs.MAX_STARS;
     const starsList = try allocator.alloc(structs.Star, defs.MAX_STARS);
     for (0..defs.MAX_STARS) |i| {
@@ -164,12 +174,14 @@ pub fn logic() !void {
     if (player.health == 0) {
         stageResetTimer -= 1;
         if (stageResetTimer == 0) {
-            try resetStage();
+            // try resetStage();
+            highscores.addHighscore(main.stage.score);
+            highscores.initHighscores();
         }
     }
 }
 
-fn handleBackground() void {
+pub fn handleBackground() void {
     backgroundX -= 1;
 
     if (backgroundX < -defs.SCREEN_WIDTH) {
@@ -177,7 +189,7 @@ fn handleBackground() void {
     }
 }
 
-fn handleStarfield() void {
+pub fn handleStarfield() void {
     for (0..stars.len) |i| {
         var x = stars[i].x - stars[i].speed;
         if (x < 0) {
@@ -370,6 +382,9 @@ fn bulletHitFighter(bullet: *structs.Entity) !bool {
                 sounds.playSound(defs.Sound.PlayerDies, defs.Channel.player);
             } else {
                 sounds.playSound(defs.Sound.alienDies, defs.Channel.any);
+                main.stage.score += 1;
+
+                highscore = @max(highscore, main.stage.score);
             }
 
             try addExplosions(
@@ -520,7 +535,7 @@ fn spawnAliens() !void {
 fn handleExplosions() void {
     var e = main.stage.explosions.first;
 
-    while (e) |node| : (e = node.next) {
+    while (e) |node| : (e = e.?.next) {
         var explosion = node.data;
 
         explosion.x += explosion.dx;
@@ -531,22 +546,19 @@ fn handleExplosions() void {
         }
         if (explosion.a <= 0) {
             allocator.destroy(node.data);
-            // if (node.prev != null) {
-            //     node.prev.?.next = node.next;
-            //     e = node.prev;
-            //     std.debug.print("removed prev not null node", .{});
-            // } else if (node.next != null) {
-            //     node.next.?.data.x += node.next.?.data.dx;
-            //     node.next.?.data.y += node.next.?.data.dy;
-            //     e = node.next;
-            //     std.debug.print("removed next not null node", .{});
-            // } else {
-            //     allocator.destroy(node);
-            //     std.debug.print("removed unattached node", .{});
-            //     break;
-            // }
             main.stage.explosions.remove(node);
-            // allocator.destroy(node);
+            if (node.prev != null) {
+                node.prev.?.next = node.next;
+                e = node.prev;
+            } else if (node.next != null) {
+                node.next.?.data.x += node.next.?.data.dx;
+                node.next.?.data.y += node.next.?.data.dy;
+                e = node.next;
+            } else {
+                allocator.destroy(node);
+                break;
+            }
+            allocator.destroy(node);
         }
     }
 }
@@ -554,7 +566,7 @@ fn handleExplosions() void {
 fn handleDebris() void {
     var d = main.stage.debris.first;
 
-    while (d) |node| : (d = node.next) {
+    while (d) |node| : (d = d.?.next) {
         var debris = node.data;
         debris.x += debris.dx;
         debris.y += debris.dy;
@@ -564,24 +576,23 @@ fn handleDebris() void {
         if (debris.life <= 0) {
             main.stage.debris.remove(node);
             allocator.destroy(node.data);
-            // if (node.prev != null) {
-            //     node.prev.?.next = node.next;
-            //     d = node.prev;
-            //     allocator.destroy(node);
-            // } else if (node.next != null) {
-            //     node.next.?.data.x += node.next.?.data.dx;
-            //     node.next.?.data.y += node.next.?.data.dy;
-            //     d = node.next;
-            //     allocator.destroy(node);
-            // } else {
-            //     allocator.destroy(node);
-            //     break;
-            // }
+            if (node.prev != null) {
+                node.prev.?.next = node.next;
+                d = node.prev;
+            } else if (node.next != null) {
+                node.next.?.data.x += node.next.?.data.dx;
+                node.next.?.data.y += node.next.?.data.dy;
+                d = node.next;
+            } else {
+                allocator.destroy(node);
+                break;
+            }
+            allocator.destroy(node);
         }
     }
 }
 
-pub fn draw() void {
+pub fn draw() !void {
     drawBackground();
 
     drawStarfield();
@@ -593,9 +604,11 @@ pub fn draw() void {
     drawExplosions();
 
     drawBullets();
+
+    try drawHUD();
 }
 
-fn drawBackground() void {
+pub fn drawBackground() void {
     var dest: c.SDL_Rect = c.SDL_Rect{};
     var x = backgroundX;
     while (x < defs.SCREEN_WIDTH) : (x += defs.SCREEN_WIDTH) {
@@ -608,7 +621,7 @@ fn drawBackground() void {
     }
 }
 
-fn drawStarfield() void {
+pub fn drawStarfield() void {
     for (stars) |star| {
         const color: u8 = @as(u8, 30 * star.speed);
 
@@ -679,5 +692,38 @@ fn clipPlayer() void {
     }
     if (player.y > @as(f32, @floatFromInt(defs.SCREEN_HEIGHT - player.h))) {
         player.y = @as(f32, @floatFromInt(defs.SCREEN_HEIGHT - player.h));
+    }
+}
+
+fn drawHUD() !void {
+    try text.drawText(
+        10,
+        10,
+        255,
+        255,
+        255,
+        comptime "SCORE: {any}",
+        .{main.stage.score},
+    );
+    if (main.stage.score > 0 and main.stage.score == highscore) {
+        try text.drawText(
+            1020,
+            10,
+            0,
+            255,
+            0,
+            comptime "HIGHSCORE: {any}",
+            .{highscore},
+        );
+    } else {
+        try text.drawText(
+            1020,
+            10,
+            255,
+            255,
+            255,
+            comptime "HIGHSCORE: {any}",
+            .{highscore},
+        );
     }
 }

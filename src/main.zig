@@ -11,17 +11,29 @@ const init = @import("init.zig");
 const input = @import("input.zig");
 const stager = @import("stage.zig");
 const sounds = @import("sounds.zig");
+const text = @import("text.zig");
+const title = @import("title.zig");
+const highscore = @import("highscores.zig");
 
 pub var app = structs.App{};
 pub var stage = structs.Stage{};
+pub var highscores = structs.Highscores{};
 
 pub fn main() !void {
+    app.textures = std.StringHashMap(*c.SDL_Texture).init(stager.allocator);
     init.initSDL();
     defer init.exitSDL();
 
-    try stager.initStage();
+    // try stager.initStage();
 
-    try sounds.initSounds();
+    try init.initGame();
+
+    try title.initTitle();
+    // highscore.initHighscores();
+
+    // try sounds.initSounds();
+
+    // try text.initText();
 
     // var then = c.SDL_GetTicks();
     // var remainder: f32 = 0;
@@ -31,7 +43,7 @@ pub fn main() !void {
         input.handleInput();
 
         try app.delegate.logic();
-        app.delegate.draw();
+        try app.delegate.draw();
 
         draw.presentScene();
         // capFrameRate(&then, &remainder);

@@ -13,6 +13,9 @@ const mixer = @cImport({
 const defs = @import("defs.zig");
 const main = @import("main.zig");
 const stage = @import("stage.zig");
+const sounds = @import("sounds.zig");
+const text = @import("text.zig");
+const highscores = @import("highscores.zig");
 
 pub fn initSDL() void {
     _ = c.SDL_Init(c.SDL_INIT_VIDEO);
@@ -28,6 +31,22 @@ pub fn initSDL() void {
     _ = mixer.Mix_OpenAudio(44100, mixer.MIX_DEFAULT_FORMAT, 2, 1024);
     _ = mixer.Mix_AllocateChannels(defs.MAX_SND_CHANNELS);
     _ = c.IMG_Init(c.IMG_INIT_PNG);
+}
+
+pub fn initGame() !void {
+    try stage.initBackground();
+
+    try stage.initStarfield();
+
+    try sounds.initSounds();
+
+    try text.initText();
+
+    highscores.initHighscoreTable();
+
+    sounds.loadMusic("music/alienSpaceShooter.ogg");
+
+    sounds.playMusic(true);
 }
 
 pub fn exitSDL() void {
