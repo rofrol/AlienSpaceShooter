@@ -1,3 +1,5 @@
+const std = @import("std");
+
 const c = @cImport({
     @cInclude("SDL2/SDL.h");
     @cInclude("SDL2/SDL_image.h");
@@ -34,6 +36,12 @@ pub fn initSDL() void {
 }
 
 pub fn initGame() !void {
+    stage.prng = std.rand.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.os.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
+
     try stage.initBackground();
 
     try stage.initStarfield();

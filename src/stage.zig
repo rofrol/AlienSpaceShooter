@@ -38,16 +38,10 @@ var backgroundX: i32 = 0;
 
 var highscore: i32 = 0;
 
-var prng: std.rand.Xoshiro256 = undefined;
+pub var prng: std.rand.Xoshiro256 = undefined;
 const rand = prng.random();
 
 pub fn initStage() !void {
-    prng = std.rand.DefaultPrng.init(blk: {
-        var seed: u64 = undefined;
-        try std.os.getrandom(std.mem.asBytes(&seed));
-        break :blk seed;
-    });
-
     main.app.delegate.logic = logic;
     main.app.delegate.draw = draw;
 
@@ -71,7 +65,7 @@ pub fn initStage() !void {
 }
 
 pub fn initBackground() !void {
-    backgroundTexture = try drawer.loadTexture("assets/background5.png");
+    backgroundTexture = try drawer.loadTexture("assets/background4.png");
 
     backgroundX = 0;
 }
