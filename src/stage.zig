@@ -38,7 +38,7 @@ var backgroundX: i32 = 0;
 
 var highscore: i32 = 0;
 
-pub var prng: std.rand.Xoshiro256 = undefined;
+pub var prng: std.Random.Xoshiro256 = undefined;
 const rand = prng.random();
 
 pub fn initStage() !void {

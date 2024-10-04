@@ -18,7 +18,7 @@ pub fn handleInput() void {
             c.SDL_KEYUP => keyUp(&sdl_event.key),
             c.SDL_QUIT => {
                 init.exitSDL();
-                std.os.exit(0);
+                std.posix.exit(0);
             },
             else => {},
         }

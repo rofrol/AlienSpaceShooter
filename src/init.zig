@@ -36,9 +36,9 @@ pub fn initSDL() void {
 }
 
 pub fn initGame() !void {
-    stage.prng = std.rand.DefaultPrng.init(blk: {
+    stage.prng = std.Random.DefaultPrng.init(blk: {
         var seed: u64 = undefined;
-        try std.os.getrandom(std.mem.asBytes(&seed));
+        try std.posix.getrandom(std.mem.asBytes(&seed));
         break :blk seed;
     });
 
