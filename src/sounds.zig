@@ -39,6 +39,6 @@ pub fn playSound(id: defs.Sound, channel: defs.Channel) void {
 fn loadSounds() !void {
     sounds[@intFromEnum(defs.Sound.playerFire)] = c.Mix_LoadWAV("sounds/playerFire.ogg");
     sounds[@intFromEnum(defs.Sound.alienFire)] = c.Mix_LoadWAV("sounds/alienFire.ogg");
-    sounds[@intFromEnum(defs.Sound.PlayerDies)] = c.Mix_LoadWAV("sounds/playerDies.ogg");
+    sounds[@intFromEnum(defs.Sound.playerDies)] = c.Mix_LoadWAV("sounds/playerDies.ogg");
     sounds[@intFromEnum(defs.Sound.alienDies)] = c.Mix_LoadWAV("sounds/alienDies.ogg");
 }

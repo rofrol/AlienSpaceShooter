@@ -373,7 +373,7 @@ fn bulletHitFighter(bullet: *structs.Entity) !bool {
             fighter.health = 0;
 
             if (fighter == player) {
-                sounds.playSound(defs.Sound.PlayerDies, defs.Channel.player);
+                sounds.playSound(defs.Sound.playerDies, defs.Channel.player);
             } else {
                 sounds.playSound(defs.Sound.alienDies, defs.Channel.any);
                 main.stage.score += 1;

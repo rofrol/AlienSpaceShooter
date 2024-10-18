@@ -29,7 +29,7 @@ pub const Channel = enum(i8) {
 pub const Sound = enum(usize) {
     playerFire,
     alienFire,
-    PlayerDies,
+    playerDies,
     alienDies,
     max,
 };
