@@ -189,12 +189,7 @@ pub fn handleStarfield() void {
         if (x < 0) {
             x = defs.SCREEN_WIDTH + x;
         }
-        const star = structs.Star{
-            .speed = stars[i].speed,
-            .x = x,
-            .y = stars[i].y,
-        };
-        stars[i] = star;
+        stars[i].x = x;
     }
 }
 
